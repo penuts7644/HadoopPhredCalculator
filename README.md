@@ -1,4 +1,4 @@
-# Photon Imaging #
+# Hadoop Photon Imaging #
 
 ---------------------
 
