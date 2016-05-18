@@ -21,7 +21,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 /**
  * ImageMapper
  *
- *
+ * Test.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */

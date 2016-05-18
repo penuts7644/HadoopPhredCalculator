@@ -16,22 +16,17 @@
 
 package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
 
-import java.io.IOException;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /**
  * ParallelPhotonImageProcessor
  *
- *
+ * Test.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
@@ -70,11 +65,11 @@ public final class ParallelPhotonImageProcessor {
             job.setReducerClass(CountMatrixReducer.class);
 
             FileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
+            job.setInputFormatClass(NonSplitableImageInput.class);
 
             FileInputFormat.setInputPaths(job, new Path(parsedArguments.get(1).toString()));
             FileOutputFormat.setOutputPath(job, new Path(parsedArguments.get(2).toString()));
-            boolean result = job.waitForCompletion(true);
-            System.exit(result ? 0 : 1);
+            System.exit(job.waitForCompletion(true) ? 0 : 1);
         } catch (Exception e) {
             System.out.println("A problem occured: " + e + "\n");
         }
