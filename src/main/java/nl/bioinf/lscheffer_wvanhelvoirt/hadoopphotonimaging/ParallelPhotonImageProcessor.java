@@ -16,9 +16,12 @@
 
 package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
 
+import java.io.IOException;
 import java.util.List;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -59,17 +62,34 @@ public final class ParallelPhotonImageProcessor {
 
         try {
             Configuration conf = new Configuration();
+            FileSystem fs = FileSystem.get(conf);
             Job job = new Job(conf, parsedArguments.get(0).toString());
             job.setJarByClass(ParallelPhotonImageProcessor.class);
+
+            job.setOutputKeyClass(Text.class);
+            job.setOutputValueClass(Text.class);
+            job.setInputFormatClass(WholeFileInputFormat.class);
+
             job.setMapperClass(ImageMapper.class);
             job.setReducerClass(CountMatrixReducer.class);
 
             FileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
-            job.setInputFormatClass(NonSplitableImageInput.class);
 
             FileInputFormat.setInputPaths(job, new Path(parsedArguments.get(1).toString()));
-            FileOutputFormat.setOutputPath(job, new Path(parsedArguments.get(2).toString()));
-            System.exit(job.waitForCompletion(true) ? 0 : 1);
+            Path output=new Path(parsedArguments.get(2).toString());
+            try {
+                fs.delete(output, true);
+            } catch (IOException e) {
+                System.out.println("A problem occured: " + e + "\n");
+            }
+            FileOutputFormat.setOutputPath(job, output);
+
+            boolean wfc = job.waitForCompletion(true);
+            if(!wfc){
+                System.out.println("A problem occured: Job failed\n");
+            } else {
+                System.exit(wfc ? 0 : 1);
+            }
         } catch (Exception e) {
             System.out.println("A problem occured: " + e + "\n");
         }
