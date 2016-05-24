@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Class-Path: nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging
+Main-Class: nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging.Paral
+ lelPhotonImageProcessor
+

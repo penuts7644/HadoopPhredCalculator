@@ -16,15 +16,19 @@
 
 package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
 
-import java.io.IOException;
-import java.util.List;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 /**
  * ParallelPhotonImageProcessor
@@ -33,15 +37,19 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public final class ParallelPhotonImageProcessor {
+public final class ParallelPhotonImageProcessor extends Configured implements Tool {
 
     /**
      * Main function for running program.
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
-        ParallelPhotonImageProcessor mainObject = new ParallelPhotonImageProcessor();
-        mainObject.start(args);
+        try {
+            int res = ToolRunner.run(new Configuration(), new ParallelPhotonImageProcessor(), args);
+            System.exit(res);
+        } catch (Exception e) {
+            System.out.println("A problem occurred: " + e.getMessage() + "\n");
+        }
     }
 
     /**
@@ -49,49 +57,42 @@ public final class ParallelPhotonImageProcessor {
      */
     private ParallelPhotonImageProcessor() { }
 
-    /**
-     * starts the application.
-     * @param args the command line arguments passed from main()
-     */
-    private void start(final String[] args) {
+    @Override
+    public int run(String[] args) throws Exception {
 
-        /* Initialize argument options and retrieve input from user. */
-        ArgumentParser arguments = new ArgumentParser(args);
-        List parsedArguments = arguments.parseArguments();
-        TiffPathFilter tpf = new TiffPathFilter(".*\\.[Tt]+?[Ii]+?[Ff]+?[Ff]?");
+        // When implementing tool
+        Configuration conf = this.getConf();
+        FileSystem fs = FileSystem.get(conf);
 
-        try {
-            Configuration conf = new Configuration();
-            FileSystem fs = FileSystem.get(conf);
-            Job job = new Job(conf, parsedArguments.get(0).toString());
-            job.setJarByClass(ParallelPhotonImageProcessor.class);
+        // Create job
+        Job job = Job.getInstance(conf, conf.get("mapreduce.job.name", "PhotonImageProcess"));
+        job.setJarByClass(ParallelPhotonImageProcessor.class);
 
-            job.setOutputKeyClass(Text.class);
-            job.setOutputValueClass(Text.class);
+        // Setup MapReduce job
+        // Do not specify the number of Reducer
+        job.setMapperClass(ImageMapper.class);
+        job.setReducerClass(CountMatrixReducer.class);
+
+        // Specify key / value
+        job.setOutputKeyClass(NullWritable.class);
+        job.setOutputValueClass(TwoDArrayWritable.class);
+
+        if (conf.get("input.dir") != null && conf.get("output.dir") != null) {
+            // Input
+            WholeFileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
+            WholeFileInputFormat.setInputPaths(job, new Path(conf.get("input.dir")));
             job.setInputFormatClass(WholeFileInputFormat.class);
 
-            job.setMapperClass(ImageMapper.class);
-            job.setReducerClass(CountMatrixReducer.class);
-
-            FileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
-
-            FileInputFormat.setInputPaths(job, new Path(parsedArguments.get(1).toString()));
-            Path output=new Path(parsedArguments.get(2).toString());
-            try {
-                fs.delete(output, true);
-            } catch (IOException e) {
-                System.out.println("A problem occured: " + e + "\n");
-            }
+            // Output
+            Path output = new Path(conf.get("output.dir"));
+            fs.delete(output, true);
             FileOutputFormat.setOutputPath(job, output);
-
-            boolean wfc = job.waitForCompletion(true);
-            if(!wfc){
-                System.out.println("A problem occured: Job failed\n");
-            } else {
-                System.exit(wfc ? 0 : 1);
-            }
-        } catch (Exception e) {
-            System.out.println("A problem occured: " + e + "\n");
+            job.setOutputFormatClass(TextOutputFormat.class);
+        } else {
+            throw new IllegalArgumentException("The value of property input.dir and output.dir must not be null");
         }
+
+        // Execute job and return status.
+        return job.waitForCompletion(true) ? 0 : 1;
     }
 }

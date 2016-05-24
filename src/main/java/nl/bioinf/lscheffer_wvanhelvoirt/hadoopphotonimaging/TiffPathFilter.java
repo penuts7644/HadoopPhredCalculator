@@ -30,8 +30,8 @@ public class TiffPathFilter implements PathFilter {
 
     private final String regex;
 
-    public TiffPathFilter(String regex) {
-        this.regex = regex;
+    public TiffPathFilter() {
+        this.regex = ".*\\.[Tt]+?[Ii]+?[Ff]+?[Ff]?";
     }
 
     @Override

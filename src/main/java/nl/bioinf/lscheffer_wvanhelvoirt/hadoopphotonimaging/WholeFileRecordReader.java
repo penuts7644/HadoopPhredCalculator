@@ -17,17 +17,17 @@
 package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * WholeFileRecordReader
@@ -36,7 +36,7 @@ import java.io.IOException;
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
+public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
 
     /** The path to the file to read. */
     private final Path mFileToRead;
@@ -47,7 +47,7 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
     /** Whether this FileSplit has been processed. */
     private boolean mProcessed;
     /** Single Text to store the value of this file (the value) when it is read. */
-    private final Text mFileText;
+    private final BytesWritable mFileBytes;
 
     /**
      * Implementation detail: This constructor is built to be called via
@@ -55,23 +55,19 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
      *
      * @param fileSplit The CombineFileSplit that this will read from.
      * @param context The context for this task.
-     * @param pathToProcess The path index from the CombineFileSplit to process in this record.
      */
-    public WholeFileRecordReader(CombineFileSplit fileSplit, TaskAttemptContext context, Integer pathToProcess) {
-        mProcessed = false;
-        mFileToRead = fileSplit.getPath(pathToProcess);
-        mFileLength = fileSplit.getLength(pathToProcess);
-        mConf = context.getConfiguration();
-
-        assert 0 == fileSplit.getOffset(pathToProcess);
-
-        mFileText = new Text();
+    public WholeFileRecordReader(FileSplit fileSplit, TaskAttemptContext context) {
+        this.mProcessed = false;
+        this.mFileToRead = fileSplit.getPath();
+        this.mFileLength = fileSplit.getLength();
+        this.mConf = context.getConfiguration();
+        this.mFileBytes = new BytesWritable();
     }
 
     /** {@inheritDoc} */
     @Override
     public void close() throws IOException {
-        mFileText.clear();
+        // no-op
     }
 
     /**
@@ -87,19 +83,19 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
     }
 
     /**
-     * <p>Returns the current value.  If the file has been read with a call to NextKeyValue(),
+     * Returns the current value. If the file has been read with a call to NextKeyValue(),
      * this returns the contents of the file as a BytesWritable.  Otherwise, it returns an
-     * empty BytesWritable.</p>
+     * empty BytesWritable.
      *
-     * <p>Throws an IllegalStateException if initialize() is not called first.</p>
+     * Throws an IllegalStateException if initialize() is not called first.
      *
      * @return A BytesWritable containing the contents of the file to read.
      * @throws IOException never.
      * @throws InterruptedException never.
      */
     @Override
-    public Text getCurrentValue() throws IOException, InterruptedException {
-        return mFileText;
+    public BytesWritable getCurrentValue() throws IOException, InterruptedException {
+        return this.mFileBytes;
     }
 
     /**
@@ -107,13 +103,13 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
      * will be generated for a file, progress will be 0.0 if it has not been processed,
      * and 1.0 if it has.
      *
-     * @return 0.0 if the file has not been processed.  1.0 if it has.
+     * @return 0.0 if the file has not been processed. 1.0 if it has.
      * @throws IOException never.
      * @throws InterruptedException never.
      */
     @Override
     public float getProgress() throws IOException, InterruptedException {
-        return (mProcessed) ? (float) 1.0 : (float) 0.0;
+        return (this.mProcessed) ? (float) 1.0 : (float) 0.0;
     }
 
     /**
@@ -132,7 +128,7 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
     /**
      * If the file has not already been read, this reads it into memory, so that a call
      * to getCurrentValue() will return the entire contents of this file as Text,
-     * and getCurrentKey() will return the qualified path to this file as Text.  Then, returns
+     * and getCurrentKey() will return the qualified path to this file as Text. Then, returns
      * true. If it has already been read, then returns false without updating any internal state.
      *
      * @return Whether the file was read or not.
@@ -141,24 +137,24 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, Text> {
      */
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
-        if (!mProcessed) {
-            if (mFileLength > (long) Integer.MAX_VALUE) {
+        if (!this.mProcessed) {
+            if (this.mFileLength > (long) Integer.MAX_VALUE) {
                 throw new IOException("File is longer than Integer.MAX_VALUE.");
             }
-            byte[] contents = new byte[(int) mFileLength];
+            byte[] contents = new byte[(int) this.mFileLength];
 
-            FileSystem fs = mFileToRead.getFileSystem(mConf);
-            FSDataInputStream in = null;
+            FileSystem fs = this.mFileToRead.getFileSystem(this.mConf);
+            InputStream in = null;
             try {
                 // Set the contents of this file.
-                in = fs.open(mFileToRead);
+                in = fs.open(this.mFileToRead);
                 IOUtils.readFully(in, contents, 0, contents.length);
-                mFileText.set(contents, 0, contents.length);
+                this.mFileBytes.set(contents, 0, contents.length);
 
             } finally {
                 IOUtils.closeStream(in);
             }
-            mProcessed = true;
+            this.mProcessed = true;
             return true;
         }
         return false;
