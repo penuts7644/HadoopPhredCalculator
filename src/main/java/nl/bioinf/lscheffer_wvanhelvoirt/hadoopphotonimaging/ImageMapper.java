@@ -20,7 +20,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -32,25 +31,26 @@ import java.io.IOException;
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class ImageMapper extends Mapper<NullWritable, BytesWritable, NullWritable, TwoDArrayWritable> {
+public class ImageMapper extends Mapper<NullWritable, BytesWritable, NullWritable, IntTwoDArrayWritable> {
 
-    private TwoDArrayWritable finalPhotonCountMatrix = new TwoDArrayWritable(IntWritable.class);
-    private IntWritable[][] photonCountMatrix;
+    private IntTwoDArrayWritable photonCountMatrix;
+    private IntWritable[][] subPhotonCountMatrix;
 
+    @Override
     public void map(NullWritable key, BytesWritable value, Context context) throws IOException, InterruptedException {
         Configuration conf = context.getConfiguration();
-        ByteArrayInputStream bais = new ByteArrayInputStream(value.getBytes());
-        PhotonImageProcessor pip = new PhotonImageProcessor(bais, conf.getInt("tolerance", 100), conf.get("method", "Fast"), conf.getBoolean("preprocessing", true));
+        PhotonImageProcessor pip = new PhotonImageProcessor(new ByteArrayInputStream(value.getBytes()), conf.getInt("tolerance", 100), conf.get("method", "Fast"), conf.getBoolean("preprocessing", true));
         pip.run();
-
         int[][] matrix = pip.getPhotonCountMatrix();
-        this.photonCountMatrix = new IntWritable[matrix[0].length][matrix.length];
-        for (int i = 0; i < matrix[0].length; i++) {
+
+        this.subPhotonCountMatrix = new IntWritable[matrix[0].length][matrix.length];
+        for (int i = 0; i < matrix[0].length; i++){
             for (int j = 0; j < matrix.length; j++) {
-                this.photonCountMatrix[i][j] = new IntWritable(matrix[i][j]);
+                this.subPhotonCountMatrix[i][j] = new IntWritable(matrix[i][j]);
             }
         }
-        this.finalPhotonCountMatrix.set(this.photonCountMatrix);
-        context.write(NullWritable.get(), this.finalPhotonCountMatrix);
+
+        this.photonCountMatrix = new IntTwoDArrayWritable(IntWritable.class, this.subPhotonCountMatrix);
+        context.write(NullWritable.get(), this.photonCountMatrix);
     }
 }

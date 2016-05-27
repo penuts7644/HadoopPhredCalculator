@@ -30,13 +30,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * WholeFileRecordReader
+ * ImageFileRecordReader
  *
- * This is a custom class for the tiff input, so files won't be split.
+ * This is a custom class to create a RecordReader for each split.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
+public class ImageFileRecordReader extends RecordReader<NullWritable, BytesWritable> {
 
     /** The path to the file to read. */
     private final Path mFileToRead;
@@ -46,17 +46,17 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWrita
     private final Configuration mConf;
     /** Whether this FileSplit has been processed. */
     private boolean mProcessed;
-    /** Single Text to store the value of this file (the value) when it is read. */
+    /** A BytesWritable to store the byte array. */
     private final BytesWritable mFileBytes;
 
     /**
      * Implementation detail: This constructor is built to be called via
-     * reflection from within CombineFileRecordReader.
+     * reflection from within FileRecordReader.
      *
-     * @param fileSplit The CombineFileSplit that this will read from.
+     * @param fileSplit The FileSplit that this will read from.
      * @param context The context for this task.
      */
-    public WholeFileRecordReader(FileSplit fileSplit, TaskAttemptContext context) {
+    public ImageFileRecordReader(FileSplit fileSplit, TaskAttemptContext context) {
         this.mProcessed = false;
         this.mFileToRead = fileSplit.getPath();
         this.mFileLength = fileSplit.getLength();
@@ -64,18 +64,22 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWrita
         this.mFileBytes = new BytesWritable();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Closes any connection. Not used.
+     *
+     * @throws IOException
+     */
     @Override
     public void close() throws IOException {
-        // no-op
+        // Not used.
     }
 
     /**
-     * Returns the absolute path to the current file.
+     * Override method that returns a NullWritable as key, because key is not being used.
      *
-     * @return The absolute path to the current file.
-     * @throws IOException never.
-     * @throws InterruptedException never.
+     * @return NullWritable because key will not be used in program.
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException Returns default exception.
      */
     @Override
     public NullWritable getCurrentKey() throws IOException, InterruptedException {
@@ -83,15 +87,12 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWrita
     }
 
     /**
-     * Returns the current value. If the file has been read with a call to NextKeyValue(),
-     * this returns the contents of the file as a BytesWritable.  Otherwise, it returns an
-     * empty BytesWritable.
+     * Override method that returns the current value. If the file has been read with a call to NextKeyValue(),
+     * this returns the contents of the file as a BytesWritable. Otherwise, it returns an empty BytesWritable.
      *
-     * Throws an IllegalStateException if initialize() is not called first.
-     *
-     * @return A BytesWritable containing the contents of the file to read.
-     * @throws IOException never.
-     * @throws InterruptedException never.
+     * @return BytesWritable containing the contents of the file.
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException Returns default exception.
      */
     @Override
     public BytesWritable getCurrentValue() throws IOException, InterruptedException {
@@ -99,13 +100,12 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWrita
     }
 
     /**
-     * Returns whether the file has been processed or not. Since only one record
-     * will be generated for a file, progress will be 0.0 if it has not been processed,
-     * and 1.0 if it has.
+     * Override method that returns whether the file has been processed or not. Can be 0.0 or 1.0 because file will
+     * not be split.
      *
-     * @return 0.0 if the file has not been processed. 1.0 if it has.
-     * @throws IOException never.
-     * @throws InterruptedException never.
+     * @return Float 0.0 if the file has not been processed. 1.0 if it has.
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException Returns default exception.
      */
     @Override
     public float getProgress() throws IOException, InterruptedException {
@@ -113,41 +113,43 @@ public class WholeFileRecordReader extends RecordReader<NullWritable, BytesWrita
     }
 
     /**
-     * All of the internal state is already set on instantiation. This is a no-op.
+     * Override method for instantiation. Not used.
      *
-     * @param split The InputSplit to read.  Unused.
-     * @param context The context for this task.  Unused.
-     * @throws IOException never.
-     * @throws InterruptedException never.
+     * @param split The InputSplit to read.
+     * @param context The context for this task.
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException Returns default exception.
      */
     @Override
     public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-        // no-op.
+        // Not used.
     }
 
     /**
-     * If the file has not already been read, this reads it into memory, so that a call
-     * to getCurrentValue() will return the entire contents of this file as Text,
-     * and getCurrentKey() will return the qualified path to this file as Text. Then, returns
+     * Override method that if the file has not already been read, reads it into memory, so that a call
+     * to getCurrentValue() will return the entire contents of this file as BytesWritable. Then, returns
      * true. If it has already been read, then returns false without updating any internal state.
      *
-     * @return Whether the file was read or not.
-     * @throws IOException if there is an error reading the file.
-     * @throws InterruptedException if there is an error.
+     * @return Boolean whether the file was read or not.
+     * @throws IOException If there is an error reading the file.
+     * @throws InterruptedException If there is an error.
      */
     @Override
     public boolean nextKeyValue() throws IOException, InterruptedException {
+
+        // If file not processed, process it.
         if (!this.mProcessed) {
             if (this.mFileLength > (long) Integer.MAX_VALUE) {
-                throw new IOException("File is longer than Integer.MAX_VALUE.");
+                throw new IOException("file is longer than Integer.MAX_VALUE.");
             }
             byte[] contents = new byte[(int) this.mFileLength];
 
-            FileSystem fs = this.mFileToRead.getFileSystem(this.mConf);
+            // Read file from hdfs to byte array and set the BytesWritable.
+            FileSystem hdfs = this.mFileToRead.getFileSystem(this.mConf);
             InputStream in = null;
             try {
                 // Set the contents of this file.
-                in = fs.open(this.mFileToRead);
+                in = hdfs.open(this.mFileToRead);
                 IOUtils.readFully(in, contents, 0, contents.length);
                 this.mFileBytes.set(contents, 0, contents.length);
 

@@ -22,18 +22,28 @@ import org.apache.hadoop.fs.PathFilter;
 /**
  * TiffPathFilter
  *
- * This class checks if paths are tiff files for use with hadoop hdfs.
+ * This class checks if paths are tiff files for use with Hadoop MapReduce.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
 public class TiffPathFilter implements PathFilter {
 
+    /** Regex string for filtering files. */
     private final String regex;
 
+    /**
+     * Constructor that sets regex to select only tiff files.
+     */
     public TiffPathFilter() {
         this.regex = ".*\\.[Tt]+?[Ii]+?[Ff]+?[Ff]?";
     }
 
+    /**
+     * Override method that returns true if the input file path matches the regex.
+     *
+     * @param path The path of a file to be check by the filter.
+     * @return boolean if file is tiff file.
+     */
     @Override
     public boolean accept(Path path) {
         return path.toString().matches(regex);

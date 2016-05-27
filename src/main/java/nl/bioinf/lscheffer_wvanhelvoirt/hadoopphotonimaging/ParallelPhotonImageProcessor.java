@@ -20,74 +20,84 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
  * ParallelPhotonImageProcessor
  *
- * Test.
+ * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to run the PhotonImageProcessor
+ * class written for ImageJ/Fiji. Users can change the job name by assigning a value to the 'mapreduce.job.name' option.
+ * 'input.dir' and 'output.dir' options are required.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
 public final class ParallelPhotonImageProcessor extends Configured implements Tool {
 
     /**
-     * Main function for running program.
-     * @param args the command line arguments
+     * Main function for running the program.
+     *
+     * @param args the command line arguments.
      */
     public static void main(final String[] args) {
+
+        // Try to make a ToolRunner, so hadoop specific command-line arguments will be parsed.
         try {
             int res = ToolRunner.run(new Configuration(), new ParallelPhotonImageProcessor(), args);
             System.exit(res);
         } catch (Exception e) {
-            System.out.println("A problem occurred: " + e.getMessage() + "\n");
+            System.out.println("A problem occurred: " + e.getMessage());
         }
     }
 
     /**
-     * private constructor.
+     * Private constructor, necessary for the ToolRunner in main.
      */
     private ParallelPhotonImageProcessor() { }
 
+    /**
+     * ToolRunner override method which contains the code to run the Hadoop MapReduce job.
+     *
+     * @param args Command-line arguments.
+     * @return int if the job is done.
+     * @throws Exception will be caught in the main.
+     */
     @Override
     public int run(String[] args) throws Exception {
 
-        // When implementing tool
+        // Set filesystem and get the configuration given by ToolRunner.
         Configuration conf = this.getConf();
-        FileSystem fs = FileSystem.get(conf);
+        FileSystem hdfs = FileSystem.get(conf);
 
-        // Create job
+        // Create job with configuration, name and set the main class for the jar file.
         Job job = Job.getInstance(conf, conf.get("mapreduce.job.name", "PhotonImageProcess"));
         job.setJarByClass(ParallelPhotonImageProcessor.class);
 
-        // Setup MapReduce job
-        // Do not specify the number of Reducer
+        // Set the mapper and reducer classes.
         job.setMapperClass(ImageMapper.class);
         job.setReducerClass(CountMatrixReducer.class);
 
-        // Specify key / value
+        // Specify the mapper output key and value classes.
         job.setOutputKeyClass(NullWritable.class);
-        job.setOutputValueClass(TwoDArrayWritable.class);
+        job.setOutputValueClass(IntTwoDArrayWritable.class);
 
+        // If 'input.dir' and/or 'output.dir' not given, throw exception.
         if (conf.get("input.dir") != null && conf.get("output.dir") != null) {
-            // Input
-            WholeFileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
-            WholeFileInputFormat.setInputPaths(job, new Path(conf.get("input.dir")));
-            job.setInputFormatClass(WholeFileInputFormat.class);
 
-            // Output
+            // Set a input path filter to use only tiff files in directory and set input formatting class.
+            ImageFileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
+            ImageFileInputFormat.setInputPaths(job, new Path(conf.get("input.dir")));
+            job.setInputFormatClass(ImageFileInputFormat.class);
+
+            // Delete output path on filesystem if exists and set output formatting class.
             Path output = new Path(conf.get("output.dir"));
-            fs.delete(output, true);
-            FileOutputFormat.setOutputPath(job, output);
-            job.setOutputFormatClass(TextOutputFormat.class);
+            if (hdfs.exists(output)) {
+                hdfs.delete(output, true);
+            }
+            TiffFileOutputFormat.setOutputPath(job, output);
+            job.setOutputFormatClass(TiffFileOutputFormat.class);
         } else {
             throw new IllegalArgumentException("The value of property input.dir and output.dir must not be null");
         }

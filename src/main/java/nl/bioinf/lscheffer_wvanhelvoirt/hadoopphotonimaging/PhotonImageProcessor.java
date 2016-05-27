@@ -16,7 +16,6 @@
 
 package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
 
-import ij.ImagePlus;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Wand;
@@ -27,6 +26,7 @@ import ij.process.ShortProcessor;
 import org.apache.hadoop.io.IntWritable;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +54,12 @@ public class PhotonImageProcessor {
     private boolean preprocessing;
     /** The output method (fast/accurate/sub-pixel resolution) is set to fast. */
     private String method;
+
+    /**
+     * Constructor.
+     */
+    public PhotonImageProcessor() {
+    }
 
     /**
      * Constructor.
@@ -111,8 +117,7 @@ public class PhotonImageProcessor {
     private void processPhotonsFast(final Polygon rawCoordinates) {
         // Loop through all raw coordinates and add them to the count matrix.
         for (int i = 0; i < rawCoordinates.npoints; i++) {
-            this.photonCountMatrix[rawCoordinates.xpoints[i]]
-                                  [rawCoordinates.ypoints[i]]++;
+            this.photonCountMatrix[rawCoordinates.xpoints[i]][rawCoordinates.ypoints[i]]++;
         }
     }
 
@@ -129,8 +134,7 @@ public class PhotonImageProcessor {
             // floor the coordinates, and add them to the count matrix.
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i], ip);
-            this.photonCountMatrix[(int) exactCoordinates[0]]
-                                  [(int) exactCoordinates[1]]++;
+            this.photonCountMatrix[(int) exactCoordinates[0]][(int) exactCoordinates[1]]++;
         }
     }
 
@@ -148,8 +152,7 @@ public class PhotonImageProcessor {
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i],
                                                                        ip);
-            this.photonCountMatrix[(int) (exactCoordinates[0] * 2)]
-                                  [(int) (exactCoordinates[1] * 2)]++;
+            this.photonCountMatrix[(int) exactCoordinates[0] * 2][(int) exactCoordinates[1] * 2]++;
         }
     }
 
@@ -224,15 +227,21 @@ public class PhotonImageProcessor {
     /**
      * This method generates and displays the final image from the photonCountMatrix.
      */
-    public void createOutputImage() {
+    public BufferedImage createOutputBufferedImage(IntWritable[][] value) {
 
         // Create new ShortProcessor for output image with matrix data and it's width and height.
-        ShortProcessor sp = new ShortProcessor(this.photonCountMatrix.length, this.photonCountMatrix[0].length);
-        sp.setIntArray(this.photonCountMatrix);
+        ShortProcessor sp = new ShortProcessor(value[0].length, value.length);
+//        sp.setIntArray(this.photonCountMatrix);
+
+        for (int i = 0; i < value[0].length; i++){
+            for (int j = 0; j < value.length; j++) {
+                sp.set(i, j, value[i][j].get());
+            }
+        }
 
         // Add the amount of different values in array.
         List<Integer> diffMatrixCount = new ArrayList<>();
-        for (int[] photonCountMatrix1 : this.photonCountMatrix) {
+        for (int[] photonCountMatrix1 : sp.getIntArray()) {
             for (int photonCountMatrix2 : photonCountMatrix1) {
                 if (!diffMatrixCount.contains(photonCountMatrix2)) {
                     diffMatrixCount.add(photonCountMatrix2);
@@ -241,15 +250,49 @@ public class PhotonImageProcessor {
         }
 
         // Use 0 as min and largest value in the matrix as max for grayscale mapping.
-        sp.setMinAndMax(0, (diffMatrixCount.size() - 2)); // Pixel mapping uses blocks.
+        if (diffMatrixCount.size() == 2) {
+            sp.setMinAndMax(0, 1);
+        } else {
+            sp.setMinAndMax(0, (diffMatrixCount.size() - 2));
+        }
 
+        return sp.getBufferedImage();
+    }
 
-        // Create new output image with title.
-        ImagePlus outputImage = new ImagePlus("Photon Count Image", sp);
+    /**
+     * This method generates and displays the final image from the photonCountMatrix.
+     */
+    public byte[] combineByteArrays(ByteArrayInputStream originalbais, ByteArrayInputStream bais) {
 
-        // Make new image window in ImageJ and set the window visible.
-        // ImageWindow outputWindow = new ImageWindow(outputImage);
-        // outputWindow.setVisible(true);
+        ImageProcessor originalIp = new Opener().openTiff(originalbais, "tiff_image").getProcessor();
+        ImageProcessor addedIp = new Opener().openTiff(bais, "tiff_image").getProcessor();
+
+        for (int i = 0; i < originalIp.getWidth(); i++){
+            for (int j = 0; j < originalIp.getHeight(); j++) {
+                originalIp.set(i, j, (originalIp.get(i, j) + addedIp.get(i, j)));
+            }
+        }
+
+        return originalIp.getLut().getBytes();
+
+//        // Create new ShortProcessor for output image with matrix data and it's width and height.
+//        ShortProcessor sp = new ShortProcessor(this.photonCountMatrix[0].length, this.photonCountMatrix.length);
+//        sp.setIntArray(this.photonCountMatrix);
+//
+//        // Add the amount of different values in array.
+//        List<Integer> diffMatrixCount = new ArrayList<>();
+//        for (int[] photonCountMatrix1 : this.photonCountMatrix) {
+//            for (int photonCountMatrix2 : photonCountMatrix1) {
+//                if (!diffMatrixCount.contains(photonCountMatrix2)) {
+//                    diffMatrixCount.add(photonCountMatrix2);
+//                }
+//            }
+//        }
+//
+//        // Use 0 as min and largest value in the matrix as max for grayscale mapping.
+//        sp.setMinAndMax(0, (diffMatrixCount.size() - 2)); // Pixel mapping uses blocks.
+//
+//        return sp.getMaskArray();
     }
 
     /**

@@ -29,35 +29,39 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import java.io.IOException;
 
 /**
- * WholeFileInputFormat
+ * ImageFileInputFormat
  *
- * This is a custom class for the tiff input, so files won't be split.
+ * This is a custom inputformat class for image file that should not be split.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class WholeFileInputFormat extends FileInputFormat<NullWritable, BytesWritable> {
+public class ImageFileInputFormat extends FileInputFormat<NullWritable, BytesWritable> {
 
+    /**
+     * Method that tells if a given image file is splittable.
+     *
+     * @param context The job context.
+     * @param file The path of the file.
+     * @return boolean if the file should be split.
+     */
     @Override
     protected boolean isSplitable(JobContext context, Path file) {
         return false;
     }
 
     /**
-     * Creates a CombineFileRecordReader to read each file assigned to this InputSplit.
-     * Note, that unlike ordinary InputSplits, split must be a CombineFileSplit, and therefore
-     * is expected to specify multiple files.
+     * Creates a ImageFileRecordReader to read each file assigned to this InputSplit.
      *
      * @param split The InputSplit to read. Throws an IllegalArgumentException if this is not a CombineFileSplit.
      * @param context The context for this task.
-     * @return a CombineFileRecordReader to process each file in split. It will read each file with a WholeFileRecordReader.
+     * @return a CombineFileRecordReader to process each file in split. It will read each file with a ImageFileRecordReader.
      * @throws IOException if there is an error.
      */
     @Override
     public RecordReader<NullWritable, BytesWritable> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
         if (!(split instanceof FileSplit)) {
-            throw new IllegalArgumentException("Split must be a FileSplit");
+            throw new IllegalArgumentException("split must be a FileSplit");
         }
-        return new WholeFileRecordReader((FileSplit) split, context);
-        //return new CombineFileRecordReader<NullWritable, BytesWritable>((CombineFileSplit) split, context, WholeFileRecordReader.class);
+        return new ImageFileRecordReader((FileSplit) split, context);
     }
 }
