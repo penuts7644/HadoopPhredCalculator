@@ -67,7 +67,7 @@ public class ImageFileRecordReader extends RecordReader<NullWritable, BytesWrita
     /**
      * Closes any connection. Not used.
      *
-     * @throws IOException
+     * @throws IOException Returns default exception.
      */
     @Override
     public void close() throws IOException {
@@ -161,5 +161,4 @@ public class ImageFileRecordReader extends RecordReader<NullWritable, BytesWrita
         }
         return false;
     }
-
 }

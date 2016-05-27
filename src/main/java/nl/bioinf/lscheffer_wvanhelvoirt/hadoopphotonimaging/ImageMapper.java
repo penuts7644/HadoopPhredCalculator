@@ -27,22 +27,39 @@ import java.io.IOException;
 /**
  * ImageMapper
  *
- * Test.
+ * The Mapper class will receive one RecordReader, and process it. One RecordReader contains one image, from which the
+ * photons will be counted. The created two D array will wrapped in a IntTwoDArrayWritable passed on to the Reducer.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
 public class ImageMapper extends Mapper<NullWritable, BytesWritable, NullWritable, IntTwoDArrayWritable> {
 
+    /** IntTwoDArrayWritable to be passed on to the Reducer. */
     private IntTwoDArrayWritable photonCountMatrix;
+    /** A Intermediate two D array. */
     private IntWritable[][] subPhotonCountMatrix;
 
+    /**
+     * Override method that processes one RecordReader item and send it's output to the reducing step.
+     *
+     * @param key NullWritable because key will not be used.
+     * @param value BytesWritable containing a byte array from one input image.
+     * @param context Context containing job information.
+     * @throws IOException When something went wrong.
+     * @throws InterruptedException When connection was interrupted.
+     */
     @Override
     public void map(NullWritable key, BytesWritable value, Context context) throws IOException, InterruptedException {
+
+        // Get the configuration and initialize the PhotonImageProcessor class.
         Configuration conf = context.getConfiguration();
         PhotonImageProcessor pip = new PhotonImageProcessor(new ByteArrayInputStream(value.getBytes()), conf.getInt("tolerance", 100), conf.get("method", "Fast"), conf.getBoolean("preprocessing", true));
+
+        // Run the PhotonImageProcessor on the given image and retrieve output.
         pip.run();
         int[][] matrix = pip.getPhotonCountMatrix();
 
+        // Write the output to the IntWritable two D array.
         this.subPhotonCountMatrix = new IntWritable[matrix[0].length][matrix.length];
         for (int i = 0; i < matrix[0].length; i++){
             for (int j = 0; j < matrix.length; j++) {
@@ -50,6 +67,7 @@ public class ImageMapper extends Mapper<NullWritable, BytesWritable, NullWritabl
             }
         }
 
+        // Add the IntWritable two D array to the IntTwoDArrayWritable wrapper and return the result.
         this.photonCountMatrix = new IntTwoDArrayWritable(IntWritable.class, this.subPhotonCountMatrix);
         context.write(NullWritable.get(), this.photonCountMatrix);
     }

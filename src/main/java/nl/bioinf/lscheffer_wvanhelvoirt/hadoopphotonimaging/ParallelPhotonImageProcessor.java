@@ -96,8 +96,8 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
             if (hdfs.exists(output)) {
                 hdfs.delete(output, true);
             }
-            TiffFileOutputFormat.setOutputPath(job, output);
-            job.setOutputFormatClass(TiffFileOutputFormat.class);
+            ImageFileOutputFormat.setOutputPath(job, output);
+            job.setOutputFormatClass(ImageFileOutputFormat.class);
         } else {
             throw new IllegalArgumentException("The value of property input.dir and output.dir must not be null");
         }

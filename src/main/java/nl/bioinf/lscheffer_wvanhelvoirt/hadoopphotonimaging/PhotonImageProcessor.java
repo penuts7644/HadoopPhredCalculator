@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * PhotonImageProcessor
  *
- * This class is able to process a stack containing single photon events data and create a combined hi-res image.
+ * This class is able to process a single photon event image and combine multiple of the images to one hi-res image.
  * Each light point within the image (based on user given tolerance value) is being processed as photon. Each photon
  * has a center that can be calculated in a fast or a more accurate way. There are two accurate calculations available.
  * One to create a higher resolution image with four times the amount of pixels (sub-pixel resolution) or one with
@@ -50,19 +50,18 @@ public class PhotonImageProcessor {
     private int[][] photonCountMatrix;
     /** Noise tolerance, default is 100. */
     private double tolerance;
-    /** This boolean tells whether the user wants to perform preprocessing. */
+    /** This boolean tells whether the user wants to perform pre-processing. */
     private boolean preprocessing;
     /** The output method (fast/accurate/sub-pixel resolution) is set to fast. */
     private String method;
 
     /**
-     * Constructor.
+     * Constructor used in the ImageFileOutputFormat class.
      */
-    public PhotonImageProcessor() {
-    }
+    public PhotonImageProcessor() {}
 
     /**
-     * Constructor.
+     * Constructor used for the Mapper.
      */
     public PhotonImageProcessor(ByteArrayInputStream bais, int tolerance, String method, boolean preprocessing) {
         this.ip = new Opener().openTiff(bais, "tiff_image").getProcessor();
@@ -77,15 +76,12 @@ public class PhotonImageProcessor {
     }
 
     /**
-     * Executed method when selected.
-     *
-     * Run method gets executed when setup is finished and when the user selects this class via plug-ins in Fiji. Run
-     * method needs to be overridden.
+     * This method will start the core of this class en creates a photonCountMatrix.
      */
     public void run() {
         Polygon rawCoordinates;
 
-        // Preprocess the current slice.
+        // Pre-process the current slice.
         if (this.preprocessing) {
             this.preprocessImage(this.ip);
         }
@@ -97,12 +93,12 @@ public class PhotonImageProcessor {
         if (this.method.equals("Fast")) {
             this.processPhotonsFast(rawCoordinates);
         } else {
-            // Calculating the auto threshold takes relatively long so this function is only called once per image.
-            //float autoThreshold = ip.getAutoThreshold();
 
+            // Calculating the auto threshold takes relatively long so this function is only called once per image.
             if (this.method.equals("Accurate")) {
                 processPhotonsAccurate(this.ip, rawCoordinates);
-            } else { // this.method equals "Subpixel resolution"
+            // Else method equals "Subpixel resolution"
+            } else {
                 processPhotonsSubPixel(this.ip, rawCoordinates);
             }
         }
@@ -115,6 +111,7 @@ public class PhotonImageProcessor {
      * @param rawCoordinates a polygon containing the coordinates as found by MaximumFinder
      */
     private void processPhotonsFast(final Polygon rawCoordinates) {
+
         // Loop through all raw coordinates and add them to the count matrix.
         for (int i = 0; i < rawCoordinates.npoints; i++) {
             this.photonCountMatrix[rawCoordinates.xpoints[i]][rawCoordinates.ypoints[i]]++;
@@ -130,8 +127,9 @@ public class PhotonImageProcessor {
      */
     private void processPhotonsAccurate(final ImageProcessor ip, final Polygon rawCoordinates) {
         for (int i = 0; i < rawCoordinates.npoints; i++) {
-            // Loop through all raw coordinates, calculate the exact coordinates,
-            // floor the coordinates, and add them to the count matrix.
+
+            // Loop through all raw coordinates, calculate the exact coordinates, floor these and add them to the
+            // count matrix.
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i], ip);
             this.photonCountMatrix[(int) exactCoordinates[0]][(int) exactCoordinates[1]]++;
@@ -147,8 +145,9 @@ public class PhotonImageProcessor {
      */
     private void processPhotonsSubPixel(final ImageProcessor ip, final Polygon rawCoordinates) {
         for (int i = 0; i < rawCoordinates.npoints; i++) {
-            // Loop through all raw coordinates, calculate the exact coordinates,
-            // double the coordinates, and add them to the count matrix.
+
+            // Loop through all raw coordinates, calculate the exact coordinates, double these and add them to the
+            // count matrix.
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i],
                                                                        ip);
@@ -158,18 +157,19 @@ public class PhotonImageProcessor {
 
 
     /**
-     * Preprocess the images. For instance: despeckling the images to prevent false positives.
+     * Pre-process the images. For instance: despeckle the image to prevent false positives.
      *
      * @param ip ImageProcessor.
      */
     private void preprocessImage(final ImageProcessor ip) {
+
         // Perform 'despeckle' using RankFilters.
         SilentRankFilters r = new SilentRankFilters();
         r.rank(ip, 1, RankFilters.MEDIAN);
     }
 
     /**
-     * Find the photons in the current image using MaximumFinder, and return their approximate coordinates.
+     * Find the photons in the image using MaximumFinder, and return their approximate coordinates.
      *
      * @param ip ImageProcessor.
      * @return Polygon with all maxima points found.
@@ -197,12 +197,12 @@ public class PhotonImageProcessor {
      * @return The new calculated coordinates.
      */
     private double[] calculateExactCoordinates(final int xCor, final int yCor, final ImageProcessor ip) {
+
         // Wand MUST BE created here, otherwise wand object might be used for multiple photons at the same time.
         Wand wd = new Wand(ip);
         double[] subPixelCoordinates = new double[2];
 
         // Outline the center of the photon using the wand tool.
-        //wd.autoOutline(xCor, yCor, autoThreshold, Wand.FOUR_CONNECTED);
         wd.autoOutline(xCor, yCor, this.tolerance, Wand.FOUR_CONNECTED);
 
         // Draw a rectangle around the outline.
@@ -212,10 +212,12 @@ public class PhotonImageProcessor {
         // (If the original midpoint is too dark compared to the background,
         // the whole image might be selected by the wand tool, if the tolerance is too high.)
         if (rect.height == ip.getHeight() || rect.width > ip.getWidth()) {
+
             // If the width and height of the rectangle are too big, use the original coordinates.
             subPixelCoordinates[0] = xCor;
             subPixelCoordinates[1] = yCor;
         } else {
+
             // Otherwise, return the centers of the found rectangles as new coordinates.
             subPixelCoordinates[0] = rect.getCenterX();
             subPixelCoordinates[1] = rect.getCenterY();
@@ -225,14 +227,17 @@ public class PhotonImageProcessor {
     }
 
     /**
-     * This method generates and displays the final image from the photonCountMatrix.
+     * This method generates a BufferedImage from the intWritable two D array and returns it
+     *
+     * @param value IntWritable two D array containing all the count values.
+     * @return BufferedImage from the input two D array.
      */
     public BufferedImage createOutputBufferedImage(IntWritable[][] value) {
 
         // Create new ShortProcessor for output image with matrix data and it's width and height.
         ShortProcessor sp = new ShortProcessor(value[0].length, value.length);
-//        sp.setIntArray(this.photonCountMatrix);
 
+        // Add all the count values to the ShortProcessor.
         for (int i = 0; i < value[0].length; i++){
             for (int j = 0; j < value.length; j++) {
                 sp.set(i, j, value[i][j].get());
@@ -257,42 +262,6 @@ public class PhotonImageProcessor {
         }
 
         return sp.getBufferedImage();
-    }
-
-    /**
-     * This method generates and displays the final image from the photonCountMatrix.
-     */
-    public byte[] combineByteArrays(ByteArrayInputStream originalbais, ByteArrayInputStream bais) {
-
-        ImageProcessor originalIp = new Opener().openTiff(originalbais, "tiff_image").getProcessor();
-        ImageProcessor addedIp = new Opener().openTiff(bais, "tiff_image").getProcessor();
-
-        for (int i = 0; i < originalIp.getWidth(); i++){
-            for (int j = 0; j < originalIp.getHeight(); j++) {
-                originalIp.set(i, j, (originalIp.get(i, j) + addedIp.get(i, j)));
-            }
-        }
-
-        return originalIp.getLut().getBytes();
-
-//        // Create new ShortProcessor for output image with matrix data and it's width and height.
-//        ShortProcessor sp = new ShortProcessor(this.photonCountMatrix[0].length, this.photonCountMatrix.length);
-//        sp.setIntArray(this.photonCountMatrix);
-//
-//        // Add the amount of different values in array.
-//        List<Integer> diffMatrixCount = new ArrayList<>();
-//        for (int[] photonCountMatrix1 : this.photonCountMatrix) {
-//            for (int photonCountMatrix2 : photonCountMatrix1) {
-//                if (!diffMatrixCount.contains(photonCountMatrix2)) {
-//                    diffMatrixCount.add(photonCountMatrix2);
-//                }
-//            }
-//        }
-//
-//        // Use 0 as min and largest value in the matrix as max for grayscale mapping.
-//        sp.setMinAndMax(0, (diffMatrixCount.size() - 2)); // Pixel mapping uses blocks.
-//
-//        return sp.getMaskArray();
     }
 
     /**

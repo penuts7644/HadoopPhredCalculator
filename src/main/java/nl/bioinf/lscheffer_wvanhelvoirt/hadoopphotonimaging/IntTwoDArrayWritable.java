@@ -21,7 +21,6 @@ import org.apache.hadoop.io.Writable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.Array;
 
 /**
  * IntTwoDArrayWritable
@@ -34,7 +33,7 @@ public class IntTwoDArrayWritable implements Writable {
 
     /** The class type. */
     private Class valueClass;
-    /** A Intwritable two D array to be used internally. */
+    /** A IntWritable two D array to be used internally. */
     private IntWritable[][] values;
 
     /**
@@ -96,9 +95,7 @@ public class IntTwoDArrayWritable implements Writable {
                 IntWritable value;
                 try {
                     value = (IntWritable) this.valueClass.newInstance();
-                } catch (InstantiationException e) {
-                    throw new RuntimeException(e.toString());
-                } catch (IllegalAccessException e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     throw new RuntimeException(e.toString());
                 }
                 value.readFields(in);

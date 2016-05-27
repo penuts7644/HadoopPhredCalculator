@@ -20,29 +20,28 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-
 import java.io.IOException;
 
 /**
- * TiffFileOutputFormat
+ * ImageFileOutputFormat
  *
- * Test.
+ * This is a custom OutputFormat class for image file .
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class TiffFileOutputFormat extends FileOutputFormat<NullWritable, IntTwoDArrayWritable> {
+public class ImageFileOutputFormat extends FileOutputFormat<NullWritable, IntTwoDArrayWritable> {
 
     /**
-     * Creates a FileRecordWriter to read each file assigned to this InputSplit.
-     * Note, that unlike ordinary InputSplits, split must be a FileSplit, and therefore
-     * is expected to specify multiple files.
+     * Creates a ImageFileRecordWriter to write the output from the Reducer to a file.
      *
      * @param context The context for this task.
-     * @return a CombineFileRecordReader to process each file in split. It will read each file with a ImageFileRecordReader.
-     * @throws IOException if there is an error.
+     * @return ImageFileRecordReader to process the output from the Reducer.
+     * @throws IOException If there is an error.
      */
     @Override
     public RecordWriter<NullWritable, IntTwoDArrayWritable> getRecordWriter(TaskAttemptContext context) throws IOException, InterruptedException {
-        return new TiffFileRecordWriter(context);
+
+        // Return the new ImageFileRecordWriter.
+        return new ImageFileRecordWriter(context);
     }
 }

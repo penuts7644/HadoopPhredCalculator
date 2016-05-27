@@ -27,13 +27,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- * TiffFileRecordWriter
+ * ImageFileRecordWriter
  *
- * This is a custom class for the tiff input, so files won't be split.
+ * This is a custom class to write the output of the Reducer to a file.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public class TiffFileRecordWriter extends RecordWriter<NullWritable, IntTwoDArrayWritable> {
+public class ImageFileRecordWriter extends RecordWriter<NullWritable, IntTwoDArrayWritable> {
 
     /** The Configuration. */
     private final Configuration mConf;
@@ -46,23 +46,40 @@ public class TiffFileRecordWriter extends RecordWriter<NullWritable, IntTwoDArra
      *
      * @param context The context for this task.
      */
-    public TiffFileRecordWriter(TaskAttemptContext context) {
+    public ImageFileRecordWriter(TaskAttemptContext context) {
         this.mConf = context.getConfiguration();
         this.mOutputPath = new Path(this.mConf.get("output.dir"), "PhotonImageProcessed.png");
     }
 
+    /**
+     * Override method that writes the Reducer output to a file.
+     *
+     * @param key NullWritable which will not be used.
+     * @param value IntTwoDArrayWritable containing the count data.
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException If connection problem.
+     */
     @Override
     public void write(NullWritable key, IntTwoDArrayWritable value) throws IOException, InterruptedException {
+
+        // Set the filesystem and delete path if it exists.
         FileSystem hdfs = FileSystem.get(this.mConf);
-        // Set the contents of this file.
         if (hdfs.exists(this.mOutputPath)) {
             hdfs.delete(this.mOutputPath, false);
         }
+
+        // Get the buffered image from the PhotonImageProcessor and write it to a png file.
         BufferedImage bi = new PhotonImageProcessor().createOutputBufferedImage(value.get());
         ImageIO.write(bi, "png", hdfs.create(this.mOutputPath));
         hdfs.close();
     }
 
+    /**
+     * Closes any connection. Not used.
+     *
+     * @throws IOException Returns default exception.
+     * @throws InterruptedException If connection problem.
+     */
     @Override
     public void close(TaskAttemptContext context) throws IOException, InterruptedException {
         // no-op

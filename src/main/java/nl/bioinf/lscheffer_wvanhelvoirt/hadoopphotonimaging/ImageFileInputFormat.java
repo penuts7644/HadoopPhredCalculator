@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * ImageFileInputFormat
  *
- * This is a custom inputformat class for image file that should not be split.
+ * This is a custom InputFormat class for image file that should not be split.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
@@ -52,16 +52,18 @@ public class ImageFileInputFormat extends FileInputFormat<NullWritable, BytesWri
     /**
      * Creates a ImageFileRecordReader to read each file assigned to this InputSplit.
      *
-     * @param split The InputSplit to read. Throws an IllegalArgumentException if this is not a CombineFileSplit.
+     * @param split The InputSplit to read. Throws an IllegalArgumentException if this is not a FileSplit.
      * @param context The context for this task.
-     * @return a CombineFileRecordReader to process each file in split. It will read each file with a ImageFileRecordReader.
-     * @throws IOException if there is an error.
+     * @return ImageFileRecordReader to process each file in split.
+     * @throws IOException If there is an error.
      */
     @Override
     public RecordReader<NullWritable, BytesWritable> createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
         if (!(split instanceof FileSplit)) {
             throw new IllegalArgumentException("split must be a FileSplit");
         }
+
+        // Return the new ImageFileRecordReader.
         return new ImageFileRecordReader((FileSplit) split, context);
     }
 }
