@@ -21,4 +21,4 @@ The jar file can be run via the Hadoop client's command-line. With the command '
 * The main class address (nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging.ParallelPhotonImageProcessor)
 * An input file or files in an directory, like '-D input.dir=[files in directory or file goes here]'
 * An output directory, like '-D output.dir=[directory to save result goes here]'.
-* Optional is to set the job name with '-D mapreduce.job.name=[job name goes here]'.
+* Optional is to set the job name with '-D mapreduce.job.name=[job name goes here]', default value is 'PhotonImageProcess'.

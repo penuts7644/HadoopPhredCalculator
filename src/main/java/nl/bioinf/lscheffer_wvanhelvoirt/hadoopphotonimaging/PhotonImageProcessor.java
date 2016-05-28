@@ -46,8 +46,8 @@ public class PhotonImageProcessor {
 
     /** The ImageProcessor. */
     private ImageProcessor ip;
-    /** A matrix for counting photons. */
-    private int[][] photonCountMatrix;
+    /** IntWritable two D array for counting photons. */
+    private IntWritable[][] photonCountMatrix;
     /** Noise tolerance, default is 100. */
     private double tolerance;
     /** This boolean tells whether the user wants to perform pre-processing. */
@@ -65,7 +65,7 @@ public class PhotonImageProcessor {
      */
     public PhotonImageProcessor(ByteArrayInputStream bais, int tolerance, String method, boolean preprocessing) {
         this.ip = new Opener().openTiff(bais, "tiff_image").getProcessor();
-        this.photonCountMatrix = new int[this.ip.getWidth()][this.ip.getHeight()];
+        this.photonCountMatrix = new IntWritable[this.ip.getWidth()][this.ip.getHeight()];
         this.tolerance = tolerance;
         this.method = method;
         this.preprocessing = preprocessing;
@@ -76,9 +76,9 @@ public class PhotonImageProcessor {
     }
 
     /**
-     * This method will start the core of this class en creates a photonCountMatrix.
+     * This method will start the core of this class and creates a photonCountMatrix.
      */
-    public void run() {
+    public IntWritable[][] createPhotonCountMatrix() {
         Polygon rawCoordinates;
 
         // Pre-process the current slice.
@@ -88,6 +88,13 @@ public class PhotonImageProcessor {
 
         // Find the photon coordinates.
         rawCoordinates = this.findPhotons(this.ip);
+
+        // Set the default values for the photonCountMatrix to zero.
+        for (int i = 0; i < this.photonCountMatrix[0].length; i++){
+            for (int j = 0; j < this.photonCountMatrix.length; j++) {
+                this.photonCountMatrix[i][j] = new IntWritable(0);
+            }
+        }
 
         // If previewing enabled, show found maxima's on slice.
         if (this.method.equals("Fast")) {
@@ -102,6 +109,9 @@ public class PhotonImageProcessor {
                 processPhotonsSubPixel(this.ip, rawCoordinates);
             }
         }
+
+        // Return the IntWritable two D array with photon counts.
+        return this.photonCountMatrix;
     }
 
     /**
@@ -114,7 +124,8 @@ public class PhotonImageProcessor {
 
         // Loop through all raw coordinates and add them to the count matrix.
         for (int i = 0; i < rawCoordinates.npoints; i++) {
-            this.photonCountMatrix[rawCoordinates.xpoints[i]][rawCoordinates.ypoints[i]]++;
+            this.photonCountMatrix[rawCoordinates.xpoints[i]][rawCoordinates.ypoints[i]].set(
+                    this.photonCountMatrix[rawCoordinates.xpoints[i]][rawCoordinates.ypoints[i]].get() + 1);
         }
     }
 
@@ -132,7 +143,8 @@ public class PhotonImageProcessor {
             // count matrix.
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i], ip);
-            this.photonCountMatrix[(int) exactCoordinates[0]][(int) exactCoordinates[1]]++;
+            this.photonCountMatrix[(int) exactCoordinates[0]][(int) exactCoordinates[1]].set(
+                    this.photonCountMatrix[(int) exactCoordinates[0]][(int) exactCoordinates[1]].get() + 1);
         }
     }
 
@@ -151,7 +163,8 @@ public class PhotonImageProcessor {
             double[] exactCoordinates = this.calculateExactCoordinates(rawCoordinates.xpoints[i],
                                                                        rawCoordinates.ypoints[i],
                                                                        ip);
-            this.photonCountMatrix[(int) exactCoordinates[0] * 2][(int) exactCoordinates[1] * 2]++;
+            this.photonCountMatrix[(int) exactCoordinates[0] * 2][(int) exactCoordinates[1] * 2].set(
+                    this.photonCountMatrix[(int) exactCoordinates[0] * 2][(int) exactCoordinates[1] * 2].get() + 1);
         }
     }
 
@@ -230,9 +243,9 @@ public class PhotonImageProcessor {
      * This method generates a BufferedImage from the intWritable two D array and returns it
      *
      * @param value IntWritable two D array containing all the count values.
-     * @return BufferedImage from the input two D array.
+     * @return BufferedImage from the IntWritable two D array.
      */
-    public BufferedImage createOutputBufferedImage(IntWritable[][] value) {
+    public BufferedImage createBufferedImage(IntWritable[][] value) {
 
         // Create new ShortProcessor for output image with matrix data and it's width and height.
         ShortProcessor sp = new ShortProcessor(value[0].length, value.length);
@@ -262,14 +275,5 @@ public class PhotonImageProcessor {
         }
 
         return sp.get16BitBufferedImage();
-    }
-
-    /**
-     * This method gets the photonCountMatrix.
-     *
-     * @return photonCountMatrix int[][].
-     */
-    public int[][] getPhotonCountMatrix() {
-        return this.photonCountMatrix;
     }
 }

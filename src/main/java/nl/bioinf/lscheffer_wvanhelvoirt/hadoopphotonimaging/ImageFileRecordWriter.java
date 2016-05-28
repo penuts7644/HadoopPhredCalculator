@@ -25,11 +25,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * ImageFileRecordWriter
  *
- * This is a custom class to write the output of the Reducer to a file.
+ * This is a custom class to write the output of the Reducer to a png file.
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
@@ -48,7 +49,7 @@ public class ImageFileRecordWriter extends RecordWriter<NullWritable, IntTwoDArr
      */
     public ImageFileRecordWriter(TaskAttemptContext context) {
         this.mConf = context.getConfiguration();
-        this.mOutputPath = new Path(this.mConf.get("output.dir"), "PhotonImageProcessed.png");
+        this.mOutputPath = new Path(this.mConf.get("output.dir"), "HadoopPhotonImaging.png");
     }
 
     /**
@@ -69,7 +70,7 @@ public class ImageFileRecordWriter extends RecordWriter<NullWritable, IntTwoDArr
         }
 
         // Get the buffered image from the PhotonImageProcessor and write it to a png file.
-        BufferedImage bi = new PhotonImageProcessor().createOutputBufferedImage(value.get());
+        BufferedImage bi = new PhotonImageProcessor().createBufferedImage(value.get());
         ImageIO.write(bi, "png", hdfs.create(this.mOutputPath));
         hdfs.close();
     }
