@@ -146,7 +146,7 @@ public class SilentRankFilters implements PlugInFilter {
         }
 
         boolean isImagePart = (roi.width < ip.getWidth()) || (roi.height < ip.getHeight());
-        boolean[] aborted = new boolean[1];						// returns whether interrupted during preview or ESC pressed
+        boolean[] aborted = new boolean[1]; // returns whether interrupted during preview or ESC pressed
         for (int ch = 0; ch < ip.getNChannels(); ch++) {
             int filterType1 = filterType;
             if (isMultiStepFilter(filterType)) {

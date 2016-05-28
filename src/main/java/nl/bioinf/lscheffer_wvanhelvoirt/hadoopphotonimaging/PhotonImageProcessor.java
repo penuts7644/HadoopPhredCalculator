@@ -261,16 +261,7 @@ public class PhotonImageProcessor {
             sp.setMinAndMax(0, (diffMatrixCount.size() - 2));
         }
 
-        return sp.getBufferedImage();
-    }
-
-    /**
-     * This method gets the ip.
-     *
-     * @return ip ImageProcessor.
-     */
-    public ImageProcessor getIp() {
-        return ip;
+        return sp.get16BitBufferedImage();
     }
 
     /**
@@ -279,33 +270,6 @@ public class PhotonImageProcessor {
      * @return photonCountMatrix int[][].
      */
     public int[][] getPhotonCountMatrix() {
-        return photonCountMatrix;
-    }
-
-    /**
-     * This method returns the given tolerance.
-     *
-     * @return tolerance double.
-     */
-    public double getTolerance() {
-        return tolerance;
-    }
-
-    /**
-     * This method returns true if preprocessing is enabled.
-     *
-     * @return preprocessing boolean.
-     */
-    public boolean isPreprocessing() {
-        return preprocessing;
-    }
-
-    /**
-     * This method returns the selected method.
-     *
-     * @return method String.
-     */
-    public String getMethod() {
-        return method;
+        return this.photonCountMatrix;
     }
 }
