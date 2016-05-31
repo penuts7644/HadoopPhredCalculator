@@ -84,11 +84,11 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
         job.setOutputValueClass(IntTwoDArrayWritable.class);
 
         // If 'input.dir' and/or 'output.dir' not given, throw exception.
-        if (conf.get("input.dir") != null && conf.get("output.dir") != null) {
+        if (conf.get("input.files") != null && conf.get("output.dir") != null) {
 
             // Set a input path filter to use only tiff files in directory and set input formatting class.
             ImageFileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
-            ImageFileInputFormat.setInputPaths(job, new Path(conf.get("input.dir")));
+            ImageFileInputFormat.setInputPaths(job, new Path(conf.get("input.files")));
             job.setInputFormatClass(ImageFileInputFormat.class);
 
             // Delete output path on filesystem if exists and set output formatting class.
@@ -99,7 +99,7 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
             ImageFileOutputFormat.setOutputPath(job, output);
             job.setOutputFormatClass(ImageFileOutputFormat.class);
         } else {
-            throw new IllegalArgumentException("The value of property input.dir and output.dir must not be null");
+            throw new IllegalArgumentException("The value of property input.files and output.dir must not be null");
         }
 
         // Execute job and return status.

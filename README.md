@@ -12,6 +12,7 @@
 
 * You need a Hadoop enabled cluster and a Hadoop client from which you can run this program. More information about Hadoop can be found [Here](http://hadoop.apache.org).
 * This software requires at least [Java 8](https://www.oracle.com/downloads/index.html) to function.
+* The source has been written in IntelliJ IDEA 2016.
 
 ### How do I use this application? ###
 
@@ -21,8 +22,8 @@ The jar file can be run via the Hadoop client's command-line. With the command b
 
 The command consists out of:
 
-* Main Hadoop command, 'hadoop jar'
-* The path to the jar file, like 'HadoopPhotonImaging.jar'.
+* Main Hadoop command.
+* The path to the jar file.
 * The main class address.
 * The input file or files in an directory.
 * An output directory.
