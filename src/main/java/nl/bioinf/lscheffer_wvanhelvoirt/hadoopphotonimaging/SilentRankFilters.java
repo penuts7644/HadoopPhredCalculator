@@ -1,4 +1,4 @@
-package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
+package nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging;
 import ij.plugin.filter.*;
 import ij.*;
 import ij.gui.Roi;

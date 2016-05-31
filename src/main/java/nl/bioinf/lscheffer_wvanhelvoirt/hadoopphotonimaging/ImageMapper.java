@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging;
+package nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;

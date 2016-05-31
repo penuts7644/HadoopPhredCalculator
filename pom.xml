@@ -24,7 +24,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     
-    <description>This plug-in for ImageJ is able to process single photon event data, by locating the center point of each photon and create a combined grayscale image with all found photons per pixel mapped to the correct pixel value.</description>
+    <description>This project is a modified version of the PhotonImaging plug-in for ImageJ, which is able to process single photon event data, by locating the center point of each photon and create a combined grayscale image with all found photons per pixel mapped to the correct pixel value.</description>
     <name>HadoopPhotonImaging</name>
     
     <developers>
