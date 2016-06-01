@@ -11,7 +11,7 @@
 ### How do I get set up? ###
 
 * You need a Hadoop enabled cluster and a Hadoop client from which you can run this program. More information about Hadoop can be found [Here](http://hadoop.apache.org).
-* This software requires at least [Java 8](https://www.oracle.com/downloads/index.html) to function.
+* This software requires at least [Java 7](https://www.oracle.com/downloads/index.html) to function.
 * The source has been written in IntelliJ IDEA 2016.
 
 ### How do I use this application? ###
