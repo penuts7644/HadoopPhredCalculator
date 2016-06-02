@@ -1,12 +1,12 @@
-# Hadoop Photon Imaging #
+# Hadoop PHRED Calculator #
 
 ---------------------
 
 ### What is this repository for? ###
 
-* Authors: Lonneke Scheffer & Wout van Helvoirt
+* Authors: Wout van Helvoirt
 * Version: 1.0
-* This project is a modified version of the PhotonImaging plug-in for ImageJ. The Hadoop version is able to process single photon event data, by locating the center point of each photon. The reduce stage combines all the two D arrays from the mappers into one 16-bit greyscale image. Each pixel contains the amount of found photons and are mapped to the correct pixel value.
+* This project processes a FastQ file and creates a text file containing the average PHRED score per base via Hadoop.
 
 ### How do I get set up? ###
 
@@ -18,11 +18,11 @@
 
 The jar file can be run via the Hadoop client's command-line. With the command below, you can run the program.
 
-    hadoop jar HadoopPhotonImaging.jar nl.bioinf.lscheffer_wvanhelvoirt.hadoopphotonimaging.ParallelPhotonImageProcessor -D input.files=[input file/files] -D output.dir=[output directory] -D mapreduce.job.name=[job name]
+    yarn jar HadoopPhredCalculator.jar nl.bioinf.wvanhelvoirt.HadoopPhredCalculator.ParallelPhredCalculator -D input.files=[input file/files] -D output.dir=[output directory] -D mapreduce.job.name=[job name]
 
 The command consists out of:
 
-* Main Hadoop command.
+* Main Hadoop yarn command.
 * The path to the jar file.
 * The main class address.
 * The input file or files in an directory.

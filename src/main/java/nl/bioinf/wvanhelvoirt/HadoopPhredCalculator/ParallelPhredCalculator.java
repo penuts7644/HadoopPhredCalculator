@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging;
+package nl.bioinf.wvanhelvoirt.HadoopPhredCalculator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -26,7 +26,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
- * ParallelPhotonImageProcessor
+ * ParallelPhredCalculator
  *
  * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to run the PhotonImageProcessor
  * class written for ImageJ/Fiji. Users can change the job name by assigning a value to the 'mapreduce.job.name' option.
@@ -34,7 +34,7 @@ import org.apache.hadoop.util.ToolRunner;
  *
  * @author Lonneke Scheffer and Wout van Helvoirt
  */
-public final class ParallelPhotonImageProcessor extends Configured implements Tool {
+public final class ParallelPhredCalculator extends Configured implements Tool {
 
     /**
      * Main function for running the program.
@@ -45,7 +45,7 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
 
         // Try to make a ToolRunner, so hadoop specific command-line arguments will be parsed.
         try {
-            int res = ToolRunner.run(new Configuration(), new ParallelPhotonImageProcessor(), args);
+            int res = ToolRunner.run(new Configuration(), new ParallelPhredCalculator(), args);
             System.exit(res);
         } catch (Exception e) {
             System.out.println("A problem occurred: " + e.getMessage());
@@ -55,7 +55,7 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
     /**
      * Private constructor, necessary for the ToolRunner in main.
      */
-    private ParallelPhotonImageProcessor() { }
+    private ParallelPhredCalculator() { }
 
     /**
      * ToolRunner override method which contains the code to run the Hadoop MapReduce job.
@@ -73,7 +73,7 @@ public final class ParallelPhotonImageProcessor extends Configured implements To
 
         // Create job with configuration, name and set the main class for the jar file.
         Job job = Job.getInstance(conf, conf.get("mapreduce.job.name", "PhotonImageProcess"));
-        job.setJarByClass(ParallelPhotonImageProcessor.class);
+        job.setJarByClass(ParallelPhredCalculator.class);
 
         // Set the mapper and reducer classes.
         job.setMapperClass(ImageMapper.class);

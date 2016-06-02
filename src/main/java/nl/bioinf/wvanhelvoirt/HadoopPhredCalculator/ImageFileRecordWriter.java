@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging;
+package nl.bioinf.wvanhelvoirt.HadoopPhredCalculator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,7 +25,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * ImageFileRecordWriter

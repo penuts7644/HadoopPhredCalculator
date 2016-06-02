@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging;
+package nl.bioinf.wvanhelvoirt.HadoopPhredCalculator;
 
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;

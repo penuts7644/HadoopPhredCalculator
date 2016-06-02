@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>nl.bioinf.lscheffer_wvanhelvoirt</groupId>
-    <artifactId>HadoopPhotonImaging</artifactId>
+    <groupId>nl.bioinf.wvanhelvoirt</groupId>
+    <artifactId>HadoopPhredCalculator</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <dependencies>
@@ -12,25 +12,20 @@
             <version>2.7.2</version>
         </dependency>
         <dependency>
-            <groupId>net.imagej</groupId>
-            <artifactId>ij</artifactId>
-            <version>1.51a</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>1.2.1</version>
         </dependency>
     </dependencies>
     <properties>
-        <main-class>ParallelPhotonImageProcessor</main-class>
+        <main-class>ParallelPhredCalculator</main-class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     
-    <description>This project is a modified version of the PhotonImaging plug-in for ImageJ. The Hadoop version is able to process single photon event data, by locating the center point of each photon. The reduce stage combines all the two D arrays from the mappers into one 16-bit greyscale image. Each pixel contains the amount of found photons and are mapped to the correct pixel value.</description>
-    <name>HadoopPhotonImaging</name>
+    <description>This project processes a FastQ file and creates a text file containing the average PHRED score per base via Hadoop.</description>
+    <name>HadoopPhredCalculator</name>
     
     <developers>
         <developer>
@@ -38,17 +33,6 @@
             <name>Wout van Helvoirt</name>
             <email>wout.van.helvoirt@gmail.com</email>
             <url>http://www.bioinf.nl/~wvanhelvoirt</url>
-            <roles>
-                    <role>architect</role>
-                    <role>developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>ls</id>
-            <name>Lonneke Scheffer</name>
-            <email>lonsch96@live.nl</email>
-            <url>http://www.bioinf.nl/~lscheffer</url>
             <roles>
                     <role>architect</role>
                     <role>developer</role>

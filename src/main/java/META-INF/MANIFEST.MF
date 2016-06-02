@@ -1,4 +1,3 @@
 Manifest-Version: 1.0
-Main-Class: nl.bioinf.lscheffer_wvanhelvoirt.HadoopPhotonImaging.Paral
- lelPhotonImageProcessor
+Main-Class: nl.bioinf.wvanhelvoirt.HadoopPhredCalculator.ParallelPhredCalculator
 
