@@ -20,19 +20,22 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.ArrayWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
  * ParallelPhredCalculator
  *
- * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to run the PhotonImageProcessor
- * class written for ImageJ/Fiji. Users can change the job name by assigning a value to the 'mapreduce.job.name' option.
- * 'input.dir' and 'output.dir' options are required.
+ * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to calculate the average phred
+ * score per base per read in a FastQ file. Users can change the job name by assigning a value to the
+ * 'mapreduce.job.name' option. 'input.files' and 'output.dir' options are required.
  *
- * @author Lonneke Scheffer and Wout van Helvoirt
+ * @author Wout van Helvoirt
  */
 public final class ParallelPhredCalculator extends Configured implements Tool {
 
@@ -72,32 +75,33 @@ public final class ParallelPhredCalculator extends Configured implements Tool {
         FileSystem hdfs = FileSystem.get(conf);
 
         // Create job with configuration, name and set the main class for the jar file.
-        Job job = Job.getInstance(conf, conf.get("mapreduce.job.name", "PhotonImageProcess"));
+        Job job = Job.getInstance(conf, conf.get("mapreduce.job.name", "PhredCalculator"));
         job.setJarByClass(ParallelPhredCalculator.class);
 
         // Set the mapper and reducer classes.
-        job.setMapperClass(ImageMapper.class);
-        job.setReducerClass(CountMatrixReducer.class);
+        job.setMapperClass(ReadMapper.class);
+        job.setReducerClass(PhredCombineReducer.class);
 
         // Specify the mapper output key and value classes.
-        job.setOutputKeyClass(NullWritable.class);
-        job.setOutputValueClass(IntTwoDArrayWritable.class);
+        job.setOutputKeyClass(LongWritable.class);
+        job.setOutputValueClass(ArrayWritable.class);
 
         // If 'input.dir' and/or 'output.dir' not given, throw exception.
         if (conf.get("input.files") != null && conf.get("output.dir") != null) {
 
-            // Set a input path filter to use only tiff files in directory and set input formatting class.
-            ImageFileInputFormat.setInputPathFilter(job, TiffPathFilter.class);
-            ImageFileInputFormat.setInputPaths(job, new Path(conf.get("input.files")));
-            job.setInputFormatClass(ImageFileInputFormat.class);
+            // Set a input path filter to use only fastq/fq files in directory and set input formatting class.
+            NLineInputFormat.setNumLinesPerSplit(job, 4);
+            NLineInputFormat.setInputPathFilter(job, FastqPathFilter.class);
+            NLineInputFormat.setInputPaths(job, new Path(conf.get("input.files")));
+            job.setInputFormatClass(NLineInputFormat.class);
 
             // Delete output path on filesystem if exists and set output formatting class.
             Path output = new Path(conf.get("output.dir"));
             if (hdfs.exists(output)) {
                 hdfs.delete(output, true);
             }
-            ImageFileOutputFormat.setOutputPath(job, output);
-            job.setOutputFormatClass(ImageFileOutputFormat.class);
+            TextOutputFormat.setOutputPath(job, output);
+            job.setOutputFormatClass(TextOutputFormat.class);
         } else {
             throw new IllegalArgumentException("The value of property input.files and output.dir must not be null");
         }

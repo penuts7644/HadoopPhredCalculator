@@ -1,4 +1,4 @@
-# Hadoop PHRED Calculator #
+# Hadoop Phred Calculator #
 
 ---------------------
 
@@ -27,4 +27,4 @@ The command consists out of:
 * The main class address.
 * The input file or files in an directory.
 * An output directory.
-* Optional is to set the job name (mapreduce.job.name). Default value is 'PhotonImageProcess'.
+* Optional is to set the job name (mapreduce.job.name). Default value is 'PhredCalculator'.

@@ -20,29 +20,29 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 
 /**
- * TiffPathFilter
+ * FastqPathFilter
  *
- * This class checks if paths are tiff files for use with Hadoop MapReduce.
+ * This class checks if paths are fastq/fq files for use with Hadoop MapReduce.
  *
- * @author Lonneke Scheffer and Wout van Helvoirt
+ * @author Wout van Helvoirt
  */
-public class TiffPathFilter implements PathFilter {
+public class FastqPathFilter implements PathFilter {
 
     /** Regex string for filtering files. */
     private final String regex;
 
     /**
-     * Constructor that sets regex to select only tiff files.
+     * Constructor that sets regex to select only fastq/fq files.
      */
-    public TiffPathFilter() {
-        this.regex = ".*\\.[Tt]+?[Ii]+?[Ff]+?[Ff]?";
+    public FastqPathFilter() {
+        this.regex = ".*\\.[Ff]+?[Aa]+?[Ss]+?[Tt]+?[Qq]+?|.*\\.[Ff]+?[Qq]+?";
     }
 
     /**
      * Override method that returns true if the input file path matches the regex.
      *
      * @param path The path of a file to be check by the filter.
-     * @return boolean if file is tiff file.
+     * @return boolean if file is fastq/fq file.
      */
     @Override
     public boolean accept(Path path) {
