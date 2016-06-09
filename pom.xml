@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>nl.bioinf.wvanhelvoirt</groupId>
     <artifactId>HadoopPhredCalculator</artifactId>
@@ -23,10 +24,12 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
-    
-    <description>This project processes a FastQ file and creates a text file containing the average PHRED score per base via Hadoop.</description>
+
+    <description>This project processes a FastQ file and creates a text file containing the average PHRED score per base
+        via Hadoop.
+    </description>
     <name>HadoopPhredCalculator</name>
-    
+
     <developers>
         <developer>
             <id>wvh</id>
@@ -34,8 +37,8 @@
             <email>wout.van.helvoirt@gmail.com</email>
             <url>http://www.bioinf.nl/~wvanhelvoirt</url>
             <roles>
-                    <role>architect</role>
-                    <role>developer</role>
+                <role>architect</role>
+                <role>developer</role>
             </roles>
             <timezone>+1</timezone>
         </developer>

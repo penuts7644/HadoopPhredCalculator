@@ -17,43 +17,47 @@
 package nl.bioinf.wvanhelvoirt.HadoopPhredCalculator;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
+
 import java.io.IOException;
 
 /**
  * ReadMapper
- *
- * The Mapper class will receive one RecordReader containing 1 read (4 lines), and process it.
- * The created array will be wrapped in a ArrayWritable passed on to the Reducer.
+ * The Mapper class will receive one RecordReader containing reads (one read is 4 lines), and process it.
+ * The created array will be wrapped in a TextArrayWritable passed on to the Reducer.
  *
  * @author Wout van Helvoirt
  */
-public class ReadMapper extends Mapper<LongWritable, Text, LongWritable, ArrayWritable> {
+public class ReadMapper extends Mapper<LongWritable, Text, NullWritable, TextArrayWritable> {
 
-    /** ArrayWritable to be passed on to the Reducer. */
-    private ArrayWritable phredCount;
+    /**
+     * TextArrayWritable to be passed on to the Reducer.
+     */
+    private TextArrayWritable phredCount;
 
     /**
      * Override method that processes one RecordReader item and send it's output to the reducing step.
      *
-     * @param key LongWritable as key.
-     * @param value Text containing 1 read (4 lines) from the fastq file.
+     * @param key     LongWritable as key.
+     * @param value   Text containing reads (one read is 4 lines) from the fastq file.
      * @param context Context containing job information.
-     * @throws IOException When something went wrong.
+     * @throws IOException          When something went wrong.
      * @throws InterruptedException When connection was interrupted.
      */
     @Override
-    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+    public void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
 
-        // Get the configuration.
         Configuration conf = context.getConfiguration();
-        AveragePhredCalculator apc = new AveragePhredCalculator(value.toString());
 
-//        throw new IOException(value.toString());
+        // Instantiate the calculator.
+        AveragePhredCalculator apc = new AveragePhredCalculator(conf.getInt("ascii.base", 64), value.toString());
 
-        // Add the Writable array too the ArrayWritable wrapper and return the result.
-        this.phredCount = new ArrayWritable(Text.class, apc.calculateAsciiScores());
-        context.write(key, this.phredCount);
+        // Add the IntWritable array too the TextArrayWritable wrapper and return the result.
+        this.phredCount = new TextArrayWritable(Text.class, apc.calculateAsciiScores());
+        context.write(NullWritable.get(), this.phredCount);
     }
 }

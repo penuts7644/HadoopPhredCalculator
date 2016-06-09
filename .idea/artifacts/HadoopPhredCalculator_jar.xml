@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="HadoopPhredCalculator:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/HadoopPhredCalculator_jar</output-path>
-    <root id="archive" name="HadoopPhotonImaging.jar">
+    <root id="archive" name="HadoopPhredCalculator.jar">
       <element id="module-output" name="HadoopPhredCalculator" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/protobuf/protobuf-java/2.5.0/protobuf-java-2.5.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/hadoop/hadoop-yarn-api/2.7.2/hadoop-yarn-api-2.7.2.jar" path-in-jar="/" />

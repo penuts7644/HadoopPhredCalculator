@@ -20,17 +20,14 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.NLineInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 /**
  * ParallelPhredCalculator
- *
+ * <p>
  * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to calculate the average phred
  * score per base per read in a FastQ file. Users can change the job name by assigning a value to the
  * 'mapreduce.job.name' option. 'input.files' and 'output.dir' options are required.
@@ -38,6 +35,12 @@ import org.apache.hadoop.util.ToolRunner;
  * @author Wout van Helvoirt
  */
 public final class ParallelPhredCalculator extends Configured implements Tool {
+
+    /**
+     * Private constructor, necessary for the ToolRunner in main.
+     */
+    private ParallelPhredCalculator() {
+    }
 
     /**
      * Main function for running the program.
@@ -54,11 +57,6 @@ public final class ParallelPhredCalculator extends Configured implements Tool {
             System.out.println("A problem occurred: " + e.getMessage());
         }
     }
-
-    /**
-     * Private constructor, necessary for the ToolRunner in main.
-     */
-    private ParallelPhredCalculator() { }
 
     /**
      * ToolRunner override method which contains the code to run the Hadoop MapReduce job.
@@ -80,28 +78,28 @@ public final class ParallelPhredCalculator extends Configured implements Tool {
 
         // Set the mapper and reducer classes.
         job.setMapperClass(ReadMapper.class);
-        job.setReducerClass(PhredCombineReducer.class);
+        job.setReducerClass(CombineReducer.class);
 
         // Specify the mapper output key and value classes.
-        job.setOutputKeyClass(LongWritable.class);
-        job.setOutputValueClass(ArrayWritable.class);
+        job.setOutputKeyClass(NullWritable.class);
+        job.setOutputValueClass(TextArrayWritable.class);
 
         // If 'input.dir' and/or 'output.dir' not given, throw exception.
         if (conf.get("input.files") != null && conf.get("output.dir") != null) {
 
             // Set a input path filter to use only fastq/fq files in directory and set input formatting class.
-            NLineInputFormat.setNumLinesPerSplit(job, 4);
-            NLineInputFormat.setInputPathFilter(job, FastqPathFilter.class);
-            NLineInputFormat.setInputPaths(job, new Path(conf.get("input.files")));
-            job.setInputFormatClass(NLineInputFormat.class);
+            NReadInputFormat.setNumLinesPerSplit(job, (4 * conf.getInt("reads.per.map", 2000)));
+            NReadInputFormat.setInputPathFilter(job, FastqPathFilter.class);
+            NReadInputFormat.setInputPaths(job, new Path(conf.get("input.files")));
+            job.setInputFormatClass(NReadInputFormat.class);
 
             // Delete output path on filesystem if exists and set output formatting class.
             Path output = new Path(conf.get("output.dir"));
             if (hdfs.exists(output)) {
                 hdfs.delete(output, true);
             }
-            TextOutputFormat.setOutputPath(job, output);
-            job.setOutputFormatClass(TextOutputFormat.class);
+            FastqFileOutputFormat.setOutputPath(job, output);
+            job.setOutputFormatClass(FastqFileOutputFormat.class);
         } else {
             throw new IllegalArgumentException("The value of property input.files and output.dir must not be null");
         }

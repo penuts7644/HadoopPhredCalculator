@@ -16,52 +16,74 @@
 
 package nl.bioinf.wvanhelvoirt.HadoopPhredCalculator;
 
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+
+import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * AveragePhredCalculator
- *
- * This class can be used to calculate the average Phred score values per base per read in a FastQ file.
+ * This class can be used to calculate the average phred score values per base per read in a Fastq file.
  *
  * @author Wout van Helvoirt
  */
 public class AveragePhredCalculator {
 
-    /** A string containing the read data. */
+    /**
+     * Base value for correcting phred scores.
+     */
+    private int asciiBase;
+    /**
+     * A string containing the read data.
+     */
     private String[] readData;
 
     /**
      * Constructor sets the readData.
      *
+     * @param base The base ascii value for phred correcting.
      * @param read The read data.
      */
-    public AveragePhredCalculator(String read) {
+    public AveragePhredCalculator(int base, String read) {
+        this.asciiBase = base;
         this.readData = read.split("\\n");
     }
 
     /**
-     * This function calculates the ASCII values per phred score per base.
+     * This function calculates the ascii values per phred score per base.
      *
      * @return IntWritable array containing ascii values per base.
      */
-    public IntWritable[] calculateAsciiScores() {
+    public Text[] calculateAsciiScores() throws IOException {
 
-        // If the length of the base line equals the length of the phred line.
-        if (this.readData[1].length() == this.readData[3].length()) {
+        LinkedList<Float> sizablePhredArray = new LinkedList<>();
+        LinkedList<Integer> sizableCountArray = new LinkedList<>();
 
-            // Convert phred's to characters.
-            char[] ordValues = new char[this.readData[3].length()];
-            this.readData[3].getChars(0, this.readData[3].length(), ordValues, 0);
+        for (int i = 0; i < this.readData.length; i += 4) {
 
-            // Add the characters array to the Text array.
-            IntWritable[] phredCountArray = new IntWritable[ordValues.length];
-            for (int i = 0; i < phredCountArray.length; i++) {
-                phredCountArray[i] = new IntWritable((int) ordValues[i]);
+            // If the length of the base line equals the length of the phred line.
+            if (this.readData[i + 1].length() == this.readData[i + 3].length()) {
+
+                // Add the characters array to the IntWritable array.
+                for (int j = 0; j < this.readData[i + 3].length(); j++) {
+                    try {
+                        sizablePhredArray.set(j, sizablePhredArray.get(j)
+                                + ((float) this.readData[i + 3].charAt(j) - this.asciiBase));
+                        sizableCountArray.set(j, sizableCountArray.get(j) + 1);
+                    } catch (IndexOutOfBoundsException e) {
+                        sizablePhredArray.add(j, ((float) this.readData[i + 3].charAt(j) - this.asciiBase));
+                        sizableCountArray.add(j, 1);
+                    }
+                }
             }
-
-            return phredCountArray;
-        } else {
-            return new IntWritable[0];
         }
+
+        // Instantiate the Text array and add lines.
+        Text[] phredCount = new Text[sizablePhredArray.size()];
+        for (int i = 0; i < sizablePhredArray.size(); i++) {
+            phredCount[i] = new Text(sizablePhredArray.get(i) + "|" + sizableCountArray.get(i));
+        }
+
+        return phredCount;
     }
 }
