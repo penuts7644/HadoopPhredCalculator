@@ -187,9 +187,11 @@ public class NReadRecordReader extends RecordReader<LongWritable, Text> {
     public boolean nextKeyValue()
             throws IOException, InterruptedException {
 
+        // Initialize key and value.
         if (this.key == null) {
             this.key = new LongWritable();
-        } else if (this.value == null) {
+        }
+        if (this.value == null) {
             this.value = new Text();
         }
 
