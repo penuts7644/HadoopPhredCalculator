@@ -158,7 +158,6 @@ public class NReadRecordReader extends RecordReader<LongWritable, Text> {
         this.maxLineLength = conf.getInt("mapreduce.input.linerecordreader.line.maxlength", Integer.MAX_VALUE);
         this.start = split.getStart();
         this.end = this.start + split.getLength();
-        this.value = new Text();
         boolean skipFirstLine = false;
 
         // Skip first line?
@@ -188,8 +187,15 @@ public class NReadRecordReader extends RecordReader<LongWritable, Text> {
     public boolean nextKeyValue()
             throws IOException, InterruptedException {
 
+        if (this.key == null) {
+            this.key = new LongWritable();
+        } else if (this.value == null) {
+            this.value = new Text();
+        }
+
         // Get the key and value.
         this.key.set(this.pos);
+        this.value.clear();
         Text endline = new Text("\n");
         int newSize = 0;
         for (int i = 0; i < this.NLINESTOPROCESS; i++) {
