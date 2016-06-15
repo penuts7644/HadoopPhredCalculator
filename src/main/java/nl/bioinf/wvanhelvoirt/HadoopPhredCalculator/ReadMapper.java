@@ -26,6 +26,7 @@ import java.io.IOException;
 
 /**
  * ReadMapper
+ *
  * The Mapper class will receive one RecordReader containing reads (one read is 4 lines), and process it.
  * The created array will be wrapped in a TextArrayWritable passed on to the Reducer.
  *
@@ -33,9 +34,7 @@ import java.io.IOException;
  */
 public class ReadMapper extends Mapper<LongWritable, Text, NullWritable, TextArrayWritable> {
 
-    /**
-     * TextArrayWritable to be passed on to the Reducer.
-     */
+    /** TextArrayWritable to be passed on to the Reducer. */
     private TextArrayWritable phredCount;
 
     /**

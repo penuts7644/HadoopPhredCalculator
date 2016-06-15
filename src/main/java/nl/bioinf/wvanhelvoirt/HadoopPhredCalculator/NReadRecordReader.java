@@ -33,43 +33,28 @@ import java.io.IOException;
 
 /**
  * NReadRecordReader
+ *
  * This is a custom class to create a RecordReader for each split.
  *
  * @author Wout van Helvoirt
  */
 public class NReadRecordReader extends RecordReader<LongWritable, Text> {
 
-    /**
-     * After which lines to stop.
-     */
+    /** After which lines to stop. */
     private int NLINESTOPROCESS;
-    /**
-     * The lineReader.
-     */
+    /** The lineReader. */
     private LineReader in;
-    /**
-     * The LongWritable key.
-     */
+    /** The LongWritable key. */
     private LongWritable key;
-    /**
-     * The Text containing lines.
-     */
+    /** The Text containing lines. */
     private Text value;
-    /**
-     * Start position.
-     */
+    /** Start position. */
     private long start;
-    /**
-     * End position.
-     */
+    /** End position. */
     private long end;
-    /**
-     * Current position.
-     */
+    /** Current position. */
     private long pos;
-    /**
-     * Max line length.
-     */
+    /** Max line length. */
     private int maxLineLength;
 
     /**

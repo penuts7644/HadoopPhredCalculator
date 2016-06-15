@@ -27,6 +27,7 @@ import java.io.IOException;
 
 /**
  * NReadInputFormat
+ *
  * This is a custom InputFormat class for Multiple readlines per mapper.
  *
  * @author Wout van Helvoirt

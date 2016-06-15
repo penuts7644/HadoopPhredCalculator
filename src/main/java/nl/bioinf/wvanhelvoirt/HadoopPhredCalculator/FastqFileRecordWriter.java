@@ -31,19 +31,16 @@ import java.io.OutputStreamWriter;
 
 /**
  * FastqFileRecordWriter
+ *
  * This is a custom class to write the output of the Reducer to a fastqc file.
  *
  * @author Wout van Helvoirt
  */
 public class FastqFileRecordWriter extends RecordWriter<NullWritable, TextArrayWritable> {
 
-    /**
-     * The Configuration.
-     */
+    /** The Configuration. */
     private final Configuration mConf;
-    /**
-     * Output file path.
-     */
+    /** Output file path. */
     private final Path mOutputPath;
 
     /**

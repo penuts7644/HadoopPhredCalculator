@@ -25,19 +25,16 @@ import java.util.LinkedList;
 
 /**
  * CombineReducer
+ *
  * The Reducer class that combines the data from all the mappers to a single array.
  *
  * @author Wout van Helvoirt
  */
 public class CombineReducer extends Reducer<NullWritable, TextArrayWritable, NullWritable, TextArrayWritable> {
 
-    /**
-     * Final TextArrayWritable with combined counts.
-     */
+    /** Final TextArrayWritable with combined counts. */
     private TextArrayWritable finalPhredCount;
-    /**
-     * The text array containing the combined counts.
-     */
+    /** The text array containing the combined counts. */
     private Text[] phredCount;
 
     /**

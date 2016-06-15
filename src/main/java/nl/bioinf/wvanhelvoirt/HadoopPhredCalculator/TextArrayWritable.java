@@ -25,19 +25,16 @@ import java.io.IOException;
 
 /**
  * TextArrayWritable
+ *
  * A Custom Writable class based on the ArrayWritable, but uses Text's instead of Writable's.
  *
  * @author Wout van Helvoirt
  */
 public class TextArrayWritable implements Writable {
 
-    /**
-     * The class type.
-     */
+    /** The class type. */
     private final Class valueClass;
-    /**
-     * A Text array to be used internally.
-     */
+    /** A Text array to be used internally. */
     private Text[] values;
 
     /**

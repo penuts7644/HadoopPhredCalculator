@@ -23,19 +23,16 @@ import java.util.LinkedList;
 
 /**
  * AveragePhredCalculator
+ *
  * This class can be used to calculate the average phred score values per base per read in a Fastq file.
  *
  * @author Wout van Helvoirt
  */
 public class AveragePhredCalculator {
 
-    /**
-     * Base value for correcting phred scores.
-     */
+    /** Base value for correcting phred scores. */
     private int asciiBase;
-    /**
-     * A string containing the read data.
-     */
+    /** A string containing the read data. */
     private String[] readData;
 
     /**

@@ -21,15 +21,14 @@ import org.apache.hadoop.fs.PathFilter;
 
 /**
  * FastqPathFilter
+ *
  * This class checks if paths are fastq/fq files for use with Hadoop MapReduce.
  *
  * @author Wout van Helvoirt
  */
 public class FastqPathFilter implements PathFilter {
 
-    /**
-     * Regex string for filtering files.
-     */
+    /** Regex string for filtering files. */
     private final String regex;
 
     /**

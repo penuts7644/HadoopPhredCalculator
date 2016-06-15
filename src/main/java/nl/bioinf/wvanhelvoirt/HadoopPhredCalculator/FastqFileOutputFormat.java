@@ -25,6 +25,7 @@ import java.io.IOException;
 
 /**
  * FastqFileOutputFormat
+ *
  * This is a custom OutputFormat class for fastqc files.
  *
  * @author Wout van Helvoirt

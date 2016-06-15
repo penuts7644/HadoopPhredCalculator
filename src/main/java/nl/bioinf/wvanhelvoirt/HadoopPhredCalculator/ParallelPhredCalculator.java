@@ -27,7 +27,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 /**
  * ParallelPhredCalculator
- * <p>
+ *
  * This class runs the Hadoop MapReduce job. It assigns a mapper and reducer and is able to calculate the average phred
  * score per base per read in a FastQ file. Users can change the job name by assigning a value to the
  * 'mapreduce.job.name' option. 'input.files' and 'output.dir' options are required.
