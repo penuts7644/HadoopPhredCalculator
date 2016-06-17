@@ -32,11 +32,6 @@ import java.util.LinkedList;
  */
 public class CombineReducer extends Reducer<NullWritable, TextArrayWritable, NullWritable, TextArrayWritable> {
 
-    /** Final TextArrayWritable with combined counts. */
-    private TextArrayWritable finalPhredCount;
-    /** The text array containing the combined counts. */
-    private Text[] phredCount;
-
     /**
      * Override method that processes all mapper outputs to one array, ready to be written as file.
      *
@@ -74,14 +69,13 @@ public class CombineReducer extends Reducer<NullWritable, TextArrayWritable, Nul
         }
 
         // Instantiate the Text array and add lines.
-        this.phredCount = new Text[sizablePhredArray.size()];
-        this.phredCount[0] = new Text("base_position\taverage_phred_score");
-        for (int i = 1; i < sizablePhredArray.size(); i++) {
-            this.phredCount[i] = new Text(i + "\t" + (sizablePhredArray.get(i - 1) / sizableCountArray.get(i - 1)));
+        Text[] phredCount = new Text[(sizablePhredArray.size() + 1)];
+        phredCount[0] = new Text("base_position\taverage_phred_score");
+        for (int i = 0; i < sizablePhredArray.size(); i++) {
+            phredCount[i + 1] = new Text((i + 1) + "\t" + (sizablePhredArray.get(i) / sizableCountArray.get(i)));
         }
 
         // Add the Text array to the ArrayWritable wrapper and return the result.
-        this.finalPhredCount = new TextArrayWritable(Text.class, this.phredCount);
-        context.write(NullWritable.get(), this.finalPhredCount);
+        context.write(NullWritable.get(), new TextArrayWritable(Text.class, phredCount));
     }
 }

@@ -23,7 +23,7 @@ The jar file can be run via the Hadoop client's command-line. With the command b
     -D input.files=[input file/files]
     -D output.dir=[output directory]
     -D mapreduce.job.name=[job name]
-    -D times.4lines.per.map=[amount of lines times 4 per mapper]
+    -D reads.per.map=[amount of reads per mapper]
     -D ascii.base=[base ascii value for phred score correcting]
 
 The command consists out of:
@@ -54,5 +54,5 @@ executing the command below in the same directory where the jar file is located.
 ### My use case ###
 
 I used one fairly small fastq file of 3.55 Gb. Each mapper receives a part of the fastq file and processes the reads.
-The phred scores for each read per base are converted to ascii values, corrected and combined. The reduce stage combines all the
-mapper outputs to one file containing per base the average phred score.
+The phred scores for each read per base are converted to ascii values, corrected and combined. The reduce stage combines
+all the mapper outputs to one file containing per base the average phred score.
