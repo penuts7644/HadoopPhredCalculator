@@ -13,13 +13,13 @@
 * You need a Hadoop enabled cluster and a Hadoop client from which you can run this program. More information about
 Hadoop can be found [Here](http://hadoop.apache.org).
 * This software requires at least [Java 7](https://www.oracle.com/downloads/index.html) to function.
-* The source has been written in IntelliJ IDEA 2016 and uses Maven for package management.
+* The source has been written in IntelliJ IDEA 2016 and uses Maven for package management and building.
 
 ### How to use this application ###
 
 The jar file can be run via the Hadoop client's command-line. With the command below, you can run the program.
 
-    yarn jar HadoopPhredCalculator.jar nl.bioinf.wvanhelvoirt.HadoopPhredCalculator.ParallelPhredCalculator
+    yarn jar HadoopPhredCalculator-1.0-jar-with-dependencies.jar
     -D input.files=[input file/files]
     -D output.dir=[output directory]
     -D mapreduce.job.name=[job name]
@@ -28,7 +28,7 @@ The jar file can be run via the Hadoop client's command-line. With the command b
 
 The command consists out of:
 
-* Main Hadoop yarn command, path to the jar file and main class address.
+* Main Hadoop yarn command and the path to the jar file.
 * Required: The input file or files in an directory.
 * Required: An output directory were output files should be writen.
 * Optional: Set the job name (mapreduce.job.name). Default value is 'PhredCalculator'.
@@ -49,7 +49,7 @@ If you run want to run the Hadoop job using a Macintosh machine, you could get t
 This error can be fixed by removing 'META-INF/LICENSE' (note the capitals) from the jar file. This can be done by
 executing the command below in the same directory where the jar file is located.
 
-    zip -d HadoopPhredCalculator.jar META-INF/LICENSE
+    zip -d HadoopPhredCalculator-1.0-jar-with-dependencies.jar META-INF/LICENSE
 
 ### My use case ###
 

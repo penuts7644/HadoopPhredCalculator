@@ -23,10 +23,12 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="HadoopPhotonImaging" />
+        <module name="HadoopPhredCalculator" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="HadoopPhotonImaging" target="1.7" />
+      <module name="HadoopPhredCalculator" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

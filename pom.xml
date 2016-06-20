@@ -2,22 +2,20 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>nl.bioinf.wvanhelvoirt</groupId>
     <artifactId>HadoopPhredCalculator</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>1.2.1</version>
-        </dependency>
     </dependencies>
+
     <properties>
         <main-class>ParallelPhredCalculator</main-class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,10 +23,23 @@
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
 
+    <name>HadoopPhredCalculator</name>
     <description>This project processes a FastQ file and creates a text file containing the average PHRED score per base
         via Hadoop.
     </description>
-    <name>HadoopPhredCalculator</name>
+
+    <url>https://github.com/penuts7644/HadoopPhredCalculator</url>
+    <inceptionYear>2016</inceptionYear>
+    <organization>
+        <name>None</name>
+    </organization>
+    <licenses>
+        <license>
+            <name>GNU General Public License</name>
+            <url>http://www.gnu.org/licenses/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <developers>
         <developer>
@@ -43,4 +54,59 @@
             <timezone>+1</timezone>
         </developer>
     </developers>
+
+    <contributors>
+        <contributor>
+            <name>None</name>
+        </contributor>
+    </contributors>
+
+    <scm>
+        <connection>scm:git:git://github.com/penuts7644/HadoopPhredCalculator</connection>
+        <developerConnection>scm:git:git@github.com:penuts7644/HadoopPhredCalculator</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/penuts7644/HHadoopPhredCalculator</url>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/penuts7644/HadoopPhredCalculator/issues</url>
+    </issueManagement>
+
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>nl.bioinf.wvanhelvoirt.HadoopPhredCalculator.ParallelPhredCalculator</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
